@@ -1,42 +1,75 @@
-import mongoose from "mongoose";
-import { IUser } from "~~/server/types/users/userAuth.types";
+import {
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  boolean,
+} from "drizzle-orm/pg-core";
 
-const UserAuth = new mongoose.Schema<IUser>(
+export const users = pgTable(
+  "users",
   {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-    },
+    id: serial("id")
+      .primaryKey(),
 
-    password: {
-      type: String,
-      required: true,
-      minLength: 8,
-      maxLength: 16,
-      trim: true,
-    },
+    /*
+    |--------------------------------------------------------------------------
+    | Auth0 User ID
+    |--------------------------------------------------------------------------
+    */
 
-    role: {
-      type: String,
-      enum: ["Customer", "Broker"],
-      default: "Customer",
-    },
+    auth0Id: text("auth0_id")
+      .notNull()
+      .unique(),
 
-    is_varified: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  { timestamps: true },
+    /*
+    |--------------------------------------------------------------------------
+    | Basic Info
+    |--------------------------------------------------------------------------
+    */
+
+    email: text("email")
+      .notNull()
+      .unique(),
+
+    name: text("name"),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Roles
+    |--------------------------------------------------------------------------
+    */
+
+    role: text("role")
+      .$type<
+        | "broker"
+        | "customer"
+      >()
+      .default("customer"),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Status
+    |--------------------------------------------------------------------------
+    */
+
+    isActive:
+      boolean("is_active")
+        .default(true),
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Timestamps
+    |--------------------------------------------------------------------------
+    */
+
+    createdAt:
+      timestamp("created_at")
+        .defaultNow(),
+
+    updatedAt:
+      timestamp("updated_at")
+        .defaultNow(),
+  }
 );
-
-const UserModel = mongoose.model<IUser>("User", UserAuth);
-
-export default UserModel;

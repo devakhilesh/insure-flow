@@ -1,11 +1,12 @@
-import { Document, Types } from "mongoose";
+import type {
+  InferSelectModel,
+  InferInsertModel,
+} from "drizzle-orm";
+import { users } from "~~/server/models";
 
-export interface IUser extends Document {
-  _id: Types.ObjectId;
-  name: string;
-  email: string;
-  password: string;
-  role: string;
-  is_varified: boolean;
-}
- 
+
+export type IUser =
+  InferSelectModel<typeof users>;
+
+export type INewUser =
+  InferInsertModel<typeof users>;

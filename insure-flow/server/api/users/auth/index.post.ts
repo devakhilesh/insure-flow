@@ -1,9 +1,12 @@
-import UserModel from "~~/server/models/users/user_auth.model";
+// import UserModel from "~~/server/models/users/user_auth.model";
+import { INewUser } from "~~/server/types/users/userAuth.types";
 import { handleErrorCatch } from "~~/server/utils/errorHandler";
 
 export default defineEventHandler(async (event) => {
   try {
 
+
+const body = await readBody(event) as INewUser
 
 
 
