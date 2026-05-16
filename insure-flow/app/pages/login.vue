@@ -1,61 +1,26 @@
 <script setup lang="ts">
-import type { LoginForm } from "~/types/auth";
+import { useAuth0 } from '@auth0/auth0-vue'
 
 definePageMeta({
   layout: "auth",
-});
+})
 
-const form = ref<LoginForm>({
-  email: "",
-  password: "",
-  rememberMe: false,
-});
+const auth0 = useAuth0()
 
 const handleLogin = () => {
-  console.log("Login Data:", form.value);
-};
+  auth0.loginWithRedirect()
+}
 </script>
 
 <template>
-  <div>
-    <h1 class="text-3xl font-bold text-center mb-6">Login</h1>
-
-    <form @submit.prevent="handleLogin">
-      <div class="mb-4">
-        <label>Email</label>
-
-        <input
-          v-model="form.email"
-          type="email"
-          class="w-full border rounded-lg p-3 mt-2"
-        />
-      </div>
-
-      <div class="mb-4">
-        <label>Password</label>
-
-        <input
-          v-model="form.password"
-          type="password"
-          class="w-full border rounded-lg p-3 mt-2"
-        />
-      </div>
-
-      <div class="flex gap-2 mb-6">
-        <input v-model="form.rememberMe" type="checkbox" />
-
-        <label> Remember me </label>
-      </div>
-
-      <button class="w-full bg-blue-600 text-white p-3 rounded-lg">
-        Login
-      </button>
-    </form>
-
-    <p class="mt-5 text-center">
-      Don't have account?
-
-      <NuxtLink to="/register" class="text-blue-600"> Register </NuxtLink>
-    </p>
+  <div class="text-center">
+    <h1 class="text-3xl font-bold mb-2">Welcome Back</h1>
+    <p class="text-gray-500 mb-8">Sign in to your InsureFlow account</p>
+    <button
+      @click="handleLogin"
+      class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition"
+    >
+      Sign in with Auth0
+    </button>
   </div>
 </template>
