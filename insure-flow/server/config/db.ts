@@ -27,7 +27,10 @@ export const connectDB = async () => {
     port: Number(dbPort),
     user: dbUser,
     password: dbPassword,
-    database: "postgres",
+    database: dbName,
+     ssl: {
+    rejectUnauthorized: false,
+  },
   });
 
   try {
@@ -68,7 +71,9 @@ export const connectDB = async () => {
     user: dbUser,
     password: dbPassword,
     database: dbName,
-
+    ssl: {
+    rejectUnauthorized: false,
+  },
     max: 20,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 5000,
