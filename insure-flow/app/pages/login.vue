@@ -1,61 +1,122 @@
 <script setup lang="ts">
-import type { LoginForm } from "~/types/auth";
+import { ref }
+from "vue";
 
-definePageMeta({
-  layout: "auth",
-});
+import { useAuth0 }
+from "@auth0/auth0-vue";
 
-const form = ref<LoginForm>({
-  email: "",
-  password: "",
-  rememberMe: false,
-});
+const auth0 =
+  useAuth0();
 
-const handleLogin = () => {
-  console.log("Login Data:", form.value);
+const loading =
+  ref(false);
+
+const login =
+async () => {
+
+  try {
+
+    loading.value = true;
+
+    await auth0
+      .loginWithRedirect({
+
+        authorizationParams: {
+
+          prompt:
+            "login",
+        },
+      });
+
+  } catch (error) {
+
+    console.error(error);
+
+  } finally {
+
+    loading.value = false;
+  }
+};
+
+const signup =
+async () => {
+
+  try {
+
+    loading.value = true;
+
+    await auth0
+      .loginWithRedirect({
+
+        authorizationParams: {
+
+          screen_hint:
+            "signup",
+
+          prompt:
+            "login",
+        },
+      });
+
+  } catch (error) {
+
+    console.error(error);
+
+  } finally {
+
+    loading.value = false;
+  }
 };
 </script>
 
 <template>
-  <div>
-    <h1 class="text-3xl font-bold text-center mb-6">Login</h1>
 
-    <form @submit.prevent="handleLogin">
-      <div class="mb-4">
-        <label>Email</label>
+  <div
+    class="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 flex items-center justify-center p-4"
+  >
 
-        <input
-          v-model="form.email"
-          type="email"
-          class="w-full border rounded-lg p-3 mt-2"
-        />
-      </div>
+    <div
+      class="w-full max-w-md bg-white rounded-3xl shadow-2xl p-10"
+    >
 
-      <div class="mb-4">
-        <label>Password</label>
+      <h1
+        class="text-4xl font-black text-center mb-3"
+      >
+        InsureFlow
+      </h1>
 
-        <input
-          v-model="form.password"
-          type="password"
-          class="w-full border rounded-lg p-3 mt-2"
-        />
-      </div>
+      <p
+        class="text-gray-500 text-center mb-10"
+      >
+        Secure Authentication System
+      </p>
 
-      <div class="flex gap-2 mb-6">
-        <input v-model="form.rememberMe" type="checkbox" />
+      <button
+        @click="login"
+        :disabled="loading"
+        class="w-full bg-black text-white py-4 rounded-2xl mb-5 hover:opacity-90 transition font-semibold"
+      >
 
-        <label> Remember me </label>
-      </div>
+        {{
+          loading
+            ? "Loading..."
+            : "Login"
+        }}
 
-      <button class="w-full bg-blue-600 text-white p-3 rounded-lg">
-        Login
       </button>
-    </form>
 
-    <p class="mt-5 text-center">
-      Don't have account?
+      <button
+        @click="signup"
+        :disabled="loading"
+        class="w-full border-2 border-black py-4 rounded-2xl hover:bg-black hover:text-white transition font-semibold"
+      >
 
-      <NuxtLink to="/register" class="text-blue-600"> Register </NuxtLink>
-    </p>
+        Signup
+
+      </button>
+
+    </div>
+
   </div>
+
 </template>
