@@ -1,9 +1,6 @@
-import { useAuth0 }
-from "@auth0/auth0-vue";
+import { useAuth0 } from "@auth0/auth0-vue";
 
-export default defineNuxtRouteMiddleware(
-async () => {
-
+export default defineNuxtRouteMiddleware(async () => {
   /*
   CLIENT ONLY
   */
@@ -12,33 +9,21 @@ async () => {
     return;
   }
 
-  const auth0 =
-    useAuth0();
+  const auth0 = useAuth0();
 
   /*
   WAIT SDK
   */
 
-  while (
-    auth0.isLoading.value
-  ) {
-
-    await new Promise(
-      (resolve) =>
-        setTimeout(resolve, 100)
-    );
+  while (auth0.isLoading.value) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
   /*
   NOT LOGIN
   */
 
-  if (
-    !auth0.isAuthenticated.value
-  ) {
-
-    return navigateTo(
-      "/login"
-    );
+  if (!auth0.isAuthenticated.value) {
+    return navigateTo("/login");
   }
 });
