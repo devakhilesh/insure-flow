@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 
 import { useAuth0 } from "@auth0/auth0-vue";
 
@@ -9,11 +9,41 @@ const loading = ref(false);
 
 definePageMeta({ ssr: false })
 
+onMounted(() => {
+  console.log("isAuthenticated:", auth0.isAuthenticated.value);
+
+  if (auth0.user.value) {
+    console.log("User:", auth0.user.value);
+    console.log("Name:", auth0.user.value.name);
+    console.log("Email:", auth0.user.value.email);
+    console.log("Picture:", auth0.user.value.picture);
+  }
+
+  if (auth0.isAuthenticated.value) {
+    window.location.href = "/select-role";
+  }
+});
+
+import { watch } from "vue";
+if (process.client) {
+  watch(
+    () => auth0.isAuthenticated.value,
+    (authenticated) => {
+      if (authenticated) {
+        window.location.href = "/select-role";
+      }
+    }
+  );
+}
+
 const login = async () => {
   try {
     loading.value = true;
 
     await auth0.loginWithRedirect({
+      appState: {
+        targetUrl: "/select-role",
+      },
       authorizationParams: {
         prompt: "login",
       },
@@ -30,6 +60,9 @@ const signup = async () => {
     loading.value = true;
 
     await auth0.loginWithRedirect({
+      appState: {
+        targetUrl: "/select-role",
+      },
       authorizationParams: {
         screen_hint: "signup",
 
@@ -42,6 +75,7 @@ const signup = async () => {
     loading.value = false;
   }
 };
+
 </script>
 
 <template>

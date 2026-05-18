@@ -1,7 +1,9 @@
 <script setup lang="ts">
 definePageMeta({
   middleware: "auth",
+  ssr: false,
 });
+
 
 import {
   computed,
@@ -37,14 +39,16 @@ const role = computed(() => {
 });
 
 onMounted(async () => {
+  // Wait for Auth0 to finish processing the redirect callback
+  // Otherwise, the client-side navigation to /select-role will strip the URL parameters before Auth0 can read them!
+  while (auth0?.isLoading.value) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
 
   ready.value = true;
 
   if (!role.value) {
-
-    await navigateTo(
-      "/select-role"
-    );
+    await navigateTo("/select-role");
   }
 });
 

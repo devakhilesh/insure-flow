@@ -1,4 +1,30 @@
+<script setup lang="ts">
+import { onMounted, watch } from "vue";
+import { useAuth0 } from "@auth0/auth0-vue";
+
+const auth0 = process.client ? useAuth0() : null;
+const router = useRouter();
+
+onMounted(() => {
+  if (auth0 && auth0.isAuthenticated.value) {
+    window.location.href = "/select-role";
+  }
+});
+
+if (process.client && auth0) {
+  watch(
+    () => auth0.isAuthenticated.value,
+    (authenticated) => {
+      if (authenticated) {
+        window.location.href = "/dashboard";
+      }
+    }
+  );
+}
+</script>
+
 <template>
+
 
   <div
     class="min-h-screen bg-linear-to-br from-black via-gray-900 to-gray-800 text-white"
