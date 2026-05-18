@@ -9,7 +9,46 @@ const loading = ref(false);
 
 definePageMeta({ ssr: false })
 
-onMounted(() => {
+const checkRoleAndRedirect = async () => {
+  try {
+    loading.value = true;
+    let currentRole = localStorage.getItem("selected_role") || auth0.user.value?.["https://insureflow.com/role"];
+    
+    if (!currentRole && auth0.isAuthenticated.value) {
+      const token = await auth0.getAccessTokenSilently();
+      const response = await $fetch<{
+        status: boolean;
+        statusCode: number;
+        message: string;
+        data: any;
+      }>("/api/users/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status && response.data && response.data.role) {
+        currentRole = response.data.role;
+        localStorage.setItem("selected_role", response.data.role);
+      }
+    }
+
+    if (currentRole === "broker") {
+      window.location.href = "/broker";
+    } else if (currentRole === "customer") {
+      window.location.href = "/customer";
+    } else {
+      window.location.href = "/select-role";
+    }
+  } catch (error) {
+    console.error("Redirection check failed:", error);
+    window.location.href = "/select-role";
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(async () => {
   console.log("isAuthenticated:", auth0.isAuthenticated.value);
 
   if (auth0.user.value) {
@@ -20,7 +59,7 @@ onMounted(() => {
   }
 
   if (auth0.isAuthenticated.value) {
-    window.location.href = "/select-role";
+    await checkRoleAndRedirect();
   }
 });
 
@@ -28,9 +67,9 @@ import { watch } from "vue";
 if (process.client) {
   watch(
     () => auth0.isAuthenticated.value,
-    (authenticated) => {
+    async (authenticated) => {
       if (authenticated) {
-        window.location.href = "/select-role";
+        await checkRoleAndRedirect();
       }
     }
   );
@@ -42,7 +81,7 @@ const login = async () => {
 
     await auth0.loginWithRedirect({
       appState: {
-        targetUrl: "/select-role",
+        targetUrl: "/dashboard",
       },
       authorizationParams: {
         prompt: "login",
@@ -61,7 +100,7 @@ const signup = async () => {
 
     await auth0.loginWithRedirect({
       appState: {
-        targetUrl: "/select-role",
+        targetUrl: "/dashboard",
       },
       authorizationParams: {
         screen_hint: "signup",

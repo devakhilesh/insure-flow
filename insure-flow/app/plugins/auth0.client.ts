@@ -16,8 +16,8 @@ export default defineNuxtPlugin((nuxtApp) => {
       },
       cacheLocation: "localstorage",
       useRefreshTokens: true,
-      onRedirectCallback: (appState: unknown) => {
-        window.location.href = (appState as Record<string, unknown>)?.targetUrl as string | undefined || "/select-role";
+      onRedirectCallback: (appState: any) => {
+        window.location.href = appState?.targetUrl || "/login";
       },
     } as any)
   );

@@ -7,7 +7,7 @@ const router = useRouter();
 
 onMounted(() => {
   if (auth0 && auth0.isAuthenticated.value) {
-    window.location.href = "/select-role";
+    window.location.href = "/login";
   }
 });
 
@@ -16,7 +16,7 @@ if (process.client && auth0) {
     () => auth0.isAuthenticated.value,
     (authenticated) => {
       if (authenticated) {
-        window.location.href = "/dashboard";
+        window.location.href = "/login";
       }
     }
   );

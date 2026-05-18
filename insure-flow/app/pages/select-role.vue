@@ -72,7 +72,7 @@ const saveRole = async () => {
     */
 
     setTimeout(() => {
-      window.location.href = "/dashboard";
+      window.location.href = `/${role.value}`;
     }, 1200);
   } catch (error: any) {
     console.error(error);

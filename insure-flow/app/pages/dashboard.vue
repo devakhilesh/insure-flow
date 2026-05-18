@@ -15,7 +15,7 @@ import { useAuth0 }
 from "@auth0/auth0-vue";
 
 const auth0 =
-  process.client
+  import.meta.client
     ? useAuth0()
     : null;
 
@@ -75,7 +75,7 @@ const logout = () => {
 
     <div
       v-if="ready"
-      class="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 text-white p-6"
+      class="min-h-screen bg-linear-to-br from-black via-gray-900 to-gray-800 text-white p-6"
     >
 
       <div
