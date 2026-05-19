@@ -8,4 +8,4 @@ export default defineNitroPlugin(async () => {
   } catch (error) {
     console.error("DB Init Failed:", error);
   }
-});
+}); 

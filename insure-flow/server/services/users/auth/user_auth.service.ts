@@ -1,11 +1,12 @@
 import { eq } from "drizzle-orm";
-import { connectDB } from "../config/db";
-import auth from "../middleware/auth";
-import { users } from "../models";
-import { INewUser, IUser } from "../types/users/userAuth.types";
-import { SuccessRes } from "../types/users/servicesResponseType";
+import { connectDB } from "../../../config/db";
+import auth from "../../../middleware/auth";
+import { users } from "../../../models";
+import { INewUser, IUser } from "../../../types/users/userAuth.types";
+import { SuccessRes } from "../../../types/helperTypes/servicesResponseType";
 
 export const authUserService = async (body: INewUser, auth0Id: string) => {
+
   const db = await connectDB();
 
   const data = {
@@ -54,9 +55,9 @@ export const authUserService = async (body: INewUser, auth0Id: string) => {
   const newUser = await db.insert(users).values(data).returning();
 
   return {
+    status: true,
     status_code: 201,
-    message: "User already exists",
-
-    data: newUser,
+    message: "User Login Success",
+    data: newUser[0],
   } as SuccessRes;
 };

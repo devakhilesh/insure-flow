@@ -1,193 +1,97 @@
-// export default defineEventHandler(async (event) => {
-//   const path = getRequestURL(event).pathname;
-//   try {
-//     // only api routes
-//     if (path.startsWith("/api")) return;
-//   } catch (err) {
-//     return err;
-//   }
-// });
-
-
-
-// import { auth }
-// from "express-oauth2-jwt-bearer";
-
-// const config = useRuntimeConfig();
-
-// export const checkJwt = auth({
-//   audience: config.auth0Audience,
-
-//   issuerBaseURL:
-//     `https://${config.auth0Domain}`,
-// });
-
-//=================================== 1 ===========================
-
-// import { verifyAuth0Token }
-// from "~~/server/utils/verifyAuth0Token";
-
-// export default defineEventHandler(
-//   async (event) => {
-
-//   // console.log("PATH =>", event.path);
-
-// if (!event.path.startsWith("/api")) {
-//   return;
-// }
-
-//     /*
-//     |--------------------------------------------------------------------------
-//     | Get Authorization Header
-//     |--------------------------------------------------------------------------
-//     */
-
-//     const authHeader =
-//       getHeader(event, "authorization");
-
-//     /*
-//     |--------------------------------------------------------------------------
-//     | Public Routes Skip
-//     |--------------------------------------------------------------------------
-//     */
-
-//     const publicRoutes = [
-//       "/api/auth/login",
-//     ];
-
-//     if (
-//       publicRoutes.includes(
-//         event.path
-//       )
-//     ) {
-//       return;
-//     }
-
-//     /*
-//     |--------------------------------------------------------------------------
-//     | Token Missing
-//     |--------------------------------------------------------------------------
-//     */
-
-//     if (
-//       !authHeader ||
-//       !authHeader.startsWith("Bearer ")
-//     ) {
-//       throw createError({
-//         statusCode: 401,
-
-//         statusMessage:
-//           "Unauthorized",
-//       });
-//     }
-
-//     /*
-//     |--------------------------------------------------------------------------
-//     | Extract Token
-//     |--------------------------------------------------------------------------
-//     */
-
-//     const token =
-//       authHeader.split(" ")[1]!;
-
-//     try {
-
-//       /*
-//       |--------------------------------------------------------------------------
-//       | Verify Auth0 Token
-//       |--------------------------------------------------------------------------
-//       */
-
-//       const payload =
-//         await verifyAuth0Token(
-//           token
-//         );
-
-//       /*
-//       |--------------------------------------------------------------------------
-//       | Store User In Context
-//       |--------------------------------------------------------------------------
-//       */
-
-//       event.context.user =
-//         payload;
-
-//     } catch (error) {
-
-//       throw createError({
-//         statusCode: 401,
-
-//         statusMessage:
-//           "Invalid or expired token",
-//       });
-//     }
-//   }
-// );
-
-
 //======================= 2 ===========================
 
-import { verifyAuth0Token }
-from "../utils/verifyAuth0Token";
+// import { verifyAuth0Token } from "../utils/verifyAuth0Token";
 
-export default defineEventHandler(
-  async (event) => {
+// export default defineEventHandler(async (event) => {
+//   /*
+//     ONLY API ROUTES
+//     */
 
-    /*
-    ONLY API ROUTES
-    */
+//   if (!event.path.startsWith("/api")) {
+//     return;
+//   }
 
-    if (
-      !event.path.startsWith("/api")
-    ) {
-      return;
-    }
+//   /*
+//     GET TOKEN
+//     */
 
-    /*
-    GET TOKEN
-    */
+//   const authHeader = getHeader(event, "authorization");
 
-    const authHeader =
-      getHeader(
-        event,
-        "authorization"
-      );
+//   if (!authHeader) {
+//     throw createError({
+//       statusCode: 401,
 
-    if (!authHeader) {
+//       statusMessage: "Token missing",
+//     });
+//   }
 
-      throw createError({
-        statusCode: 401,
+//   const token = authHeader.split(" ")[1];
 
-        statusMessage:
-          "Token missing",
-      });
-    }
+//   try {
+//     const payload = await verifyAuth0Token(token!);
 
-    const token =
-      authHeader.split(" ")[1];
+//     /*
+//       STORE USER
+//       */
 
-    try {
+//     event.context.user = payload;
+//   } catch {
+//     throw createError({
+//       statusCode: 401,
 
-      const payload =
-        await verifyAuth0Token(
-          token!
-        );
+//       statusMessage: "Invalid token",
+//     });
+//   }
+// });
 
-      /*
-      STORE USER
-      */
+//=============================================
 
-      event.context.user =
-        payload;
+import { verifyAuth0Token } from "../utils/verifyAuth0Token";
+import { connectDB } from "../config/db";
+import { users } from "../models";
+import { eq } from "drizzle-orm";
 
-    } catch {
+export default defineEventHandler(async (event) => {
+  if (!event.path.startsWith("/api")) return;
 
-      throw createError({
-        statusCode: 401,
+  const authHeader = getHeader(event, "authorization");
 
-        statusMessage:
-          "Invalid token",
-      });
-    }
+  if (!authHeader) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: "Token missing",
+    });
   }
-);
+
+  const token = authHeader.split(" ")[1];
+  const payload = await verifyAuth0Token(token!);
+
+  // for signUp only 
+
+  event.context.user = payload;
+
+  // Allow onboarding/signup route without DB user  first onboarding
+  
+  const isAuthSignupRoute =
+    event.path.startsWith("/api/users/auth") && event.method === "POST";
+
+  if (isAuthSignupRoute) {
+    return;
+  }
+
+  const db = await connectDB();
+
+  const dbUser = await db
+    .select()
+    .from(users)
+    .where(eq(users.auth0Id, payload.sub as string));
+
+  if (!dbUser[0]) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: "User profile not created yet",
+    });
+  }
+
+  event.context.user = dbUser[0];
+});

@@ -1,5 +1,5 @@
-import { authUserService } from "~~/server/services/user_auth.service";
-import { SuccessRes } from "~~/server/types/users/servicesResponseType";
+import { authUserService } from "~~/server/services/users/auth/user_auth.service";
+import { SuccessRes } from "~~/server/types/helperTypes/servicesResponseType";
 import { INewUser, IUser } from "~~/server/types/users/userAuth.types";
 
 import { handleErrorCatch } from "~~/server/utils/errorHandler";
@@ -10,13 +10,13 @@ export default defineEventHandler(async (event) => {
 
     const user = event.context.user;
 
-    const authService = await authUserService(body, user.sub) as SuccessRes
- 
+    // console.log("user", user)
+
+    const authService = (await authUserService(body, user.sub)) as SuccessRes;
 
     // console.log({
     //   authService,
     // });
-
 
     return {
       status: true,
@@ -24,7 +24,6 @@ export default defineEventHandler(async (event) => {
       message: authService.message,
       data: authService.data,
     };
-    
   } catch (err: unknown) {
     if (err instanceof Error) {
       const statusCode = "statusCode" in err ? Number(err.statusCode) : 500;
